@@ -12,6 +12,13 @@ connectdb()
 // const Options = {
 //     origin:["http://localhost:3000"]
 // }
+
+
+app.get('/',(req,res)=>{
+    res.send('I am From Prv Backend')
+})
+
+
 app.use(express.json())
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))

@@ -4,7 +4,7 @@ const User = require("../Model/UserModel")
 exports.createRecord = async (req, res) => {
     try {
         const { userid, cartItems,AnyMessage } = req.body;
-        console.log(req.body)
+        // console.log(req.body)
         if (!userid || !cartItems || !Array.isArray(cartItems)) {
             return res.status(400).json({
                 success: false,
@@ -54,7 +54,7 @@ exports.createRecord = async (req, res) => {
         // Create a new order record
         const newOrder = new Order({ userid, product: productsUpdated,AnyMessage });
         await newOrder.save();
-        console.log(newOrder)
+        console.log("New-Orders",newOrder)
         res.status(200).json({
             success: true,
             message: "Record is created",
@@ -89,7 +89,8 @@ exports.getRecord = async (req, res) => {
                         email: user.email
                     },
                     OrderStatus: order.OrderStatus, // Fix here
-                    OrderDate: order.OrderDate // Fix here
+                    OrderDate: order.OrderDate, // Fix here
+                    AnyMessage:order.AnyMessage
                 };
                 combinedData.push(combinedOrder);
             }
