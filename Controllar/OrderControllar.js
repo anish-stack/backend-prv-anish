@@ -3,7 +3,8 @@ const Product = require("../Model/ProductModel");
 const User = require("../Model/UserModel")
 exports.createRecord = async (req, res) => {
     try {
-        const { userid, cartItems } = req.body;
+        const { userid, cartItems,AnyMessage } = req.body;
+        console.log(req.body)
         if (!userid || !cartItems || !Array.isArray(cartItems)) {
             return res.status(400).json({
                 success: false,
@@ -51,7 +52,7 @@ exports.createRecord = async (req, res) => {
         }
 
         // Create a new order record
-        const newOrder = new Order({ userid, product: productsUpdated });
+        const newOrder = new Order({ userid, product: productsUpdated,AnyMessage });
         await newOrder.save();
         console.log(newOrder)
         res.status(200).json({
