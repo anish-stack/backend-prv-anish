@@ -1,9 +1,11 @@
 const Order = require("../Model/OrderModel")
 const Product = require("../Model/ProductModel");
 const User = require("../Model/UserModel")
+const NodeCache = require("node-cache")
+const myCache = new NodeCache({ stdTTL: 1800, checkperiod: 120 });
 exports.createRecord = async (req, res) => {
     try {
-        const { userid, cartItems,AnyMessage } = req.body;
+        const { userid, cartItems, AnyMessage } = req.body;
         // console.log(req.body)
         if (!userid || !cartItems || !Array.isArray(cartItems)) {
             return res.status(400).json({
@@ -52,9 +54,9 @@ exports.createRecord = async (req, res) => {
         }
 
         // Create a new order record
-        const newOrder = new Order({ userid, product: productsUpdated,AnyMessage });
+        const newOrder = new Order({ userid, product: productsUpdated, AnyMessage });
         await newOrder.save();
-        console.log("New-Orders",newOrder)
+        console.log("New-Orders", newOrder)
         res.status(200).json({
             success: true,
             message: "Record is created",
@@ -90,13 +92,25 @@ exports.getRecord = async (req, res) => {
                     },
                     OrderStatus: order.OrderStatus, // Fix here
                     OrderDate: order.OrderDate, // Fix here
-                    AnyMessage:order.AnyMessage
+                    AnyMessage: order.AnyMessage
                 };
                 combinedData.push(combinedOrder);
             }
         }
+        const cachedData = myCache.get("orders");
+        if (cachedData) {
+            return res.status(200).json({
+                success: true,
+                msg: "Data From Cache",
+                data: cachedData
+            });
+        } else {
+            myCache.set('orders', combinedData)
+
+        }
         res.status(200).json({
             success: true,
+            msg: "Data From Db",
             data: combinedData
         });
     } catch (error) {
@@ -177,11 +191,12 @@ exports.confirmOrder = async (req, res) => {
         });
     }
 };
+
 exports.cancelOrder = async (req, res) => {
     try {
         const { consOrder } = req.body;
         const order = await Order.findById(consOrder.orderid);
-    
+
         if (!order) {
             return res.status(404).json({
                 success: false,
@@ -235,6 +250,32 @@ exports.cancelOrder = async (req, res) => {
         res.status(500).json({
             success: false,
             error: "Internal Server Error"
+        });
+    }
+};
+
+exports.DeleteOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Order.findById(id);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order Not Found"
+            });
+        }
+        await order.deleteOne();
+        myCache.del('orders')
+
+        return res.status(200).json({
+            success: true,
+            message: "Order deleted successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
         });
     }
 };

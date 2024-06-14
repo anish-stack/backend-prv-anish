@@ -1,5 +1,7 @@
 const Product = require("../Model/ProductModel")
 const fs = require("fs")
+const NodeCache = require("node-cache")
+const myCache = new NodeCache({ stdTTL: 1800, checkperiod: 120 });
 const cloudinary = require('cloudinary').v2
 cloudinary.config({
     cloud_name: 'dglihfwse',
@@ -118,18 +120,32 @@ exports.updateRecord = async (req, res) => {
 
 exports.getRecord = async (req, res) => {
     try {
-        let data = await Product.find()
-        res.status(200).json({
-            success: true,
-            data: data
-        })
+
+        const cachedData = myCache.get("product");
+
+        if (cachedData) {
+            return res.status(200).json({
+                success: true,
+                msg: "Data From Cache",
+                data: cachedData
+            });
+        } else {
+            const data = await Product.find();
+            myCache.set('product', data);
+            return res.status(200).json({
+                success: true,
+                msg: "Data From Database",
+                data: data
+            });
+        }
     } catch (error) {
-        res.status(500).json({
+        console.error(error);  // Log the error for debugging
+        return res.status(500).json({
             success: false,
-            mess: "Internal Server Error"
-        })
+            message: "Internal Server Error"
+        });
     }
-}
+};
 
 exports.deleteRecord = async (req, res) => {
     try {
@@ -150,10 +166,12 @@ exports.deleteRecord = async (req, res) => {
             } catch (error) { }
             await data.deleteOne()
         }
+        myCache.del("product");
         res.status(200).json({
             success: true,
             mess: "Record Deleted"
         })
+
     } catch (error) {
         console.log(error);
     }
