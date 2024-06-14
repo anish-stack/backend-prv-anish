@@ -5,7 +5,7 @@ const cors = require("cors")
 const connectdb = require('./mongo/db')
 const ProductNameRouter = require("./Routes/ProductNameRouter")
 require("dotenv").config()
-const PORT = 8000
+const PORT = 7859
 const app = express()
 connectdb()
 
