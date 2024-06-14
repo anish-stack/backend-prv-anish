@@ -45,7 +45,7 @@ exports.createRecord = async (req, res) => {
                     maincategory: productData.maincategory,
                     subcategory: productData.subcategory
                 });
-
+                myCache.del('orders')
                 console.log(`Product stock updated for ${product.name}. New stock: ${updatedStock}`);
             } catch (error) {
                 console.log(error);
@@ -158,18 +158,19 @@ exports.confirmOrder = async (req, res) => {
                     continue;
                 }
 
-                const updatedStock = product.stock - productData.quantity;
+                const updatedStock = product.stock || 0 - productData.quantity;
 
-                if (updatedStock < 0) {
-                    return res.status(402).json({
-                        success: false,
-                        msg: `Insufficient stock for product ${product.name}. Available Stock is ${product.stock}`
-                    });
-                }
+                // if (updatedStock < 0) {
+                //     return res.status(402).json({
+                //         success: false,
+                //         msg: `Insufficient stock for product ${product.name}. Available Stock is ${product.stock}`
+                //     });
+                // }
 
                 product.stock = updatedStock;
                 order.OrderStatus = "Confirmed"; // Update order status here
                 await product.save();
+                myCache.del('orders')
                 await order.save(); // Save the updated order status
 
                 console.log(`Product stock updated for ${product.name}. New stock: ${updatedStock}`);
@@ -229,6 +230,8 @@ exports.cancelOrder = async (req, res) => {
                 // Restore the stock for the cancelled order
                 const updatedStock = product.stock + productData.quantity;
                 product.stock = updatedStock;
+                order.OrderStatus === "Confirmed"
+                myCache.del('orders')
                 await product.save();
                 console.log(`Product stock updated for ${product.name}. New stock: ${updatedStock}`);
             } catch (error) {
