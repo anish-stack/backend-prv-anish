@@ -1,27 +1,27 @@
 const User = require("../Model/UserModel")
-var passwordValidator = require('password-validator');
+// var passwordValidator = require('password-validator');
 const bcrypt = require("bcrypt")
 const sendEmail = require('../utils/sendMail');
 const jwt = require("jsonwebtoken");
 
 
 // Create a schema
-var schema = new passwordValidator();
+// var schema = new passwordValidator();
 
-// Add properties to it
-schema
-    .is().min(6)
-    .is().max(10)
-    .has().uppercase()
-    .has().lowercase()
-    .has().digits(1)
-    .has().symbols(1)
-    .has().not().spaces()
-    .is().not().oneOf(['Passw0rd', 'Password123']);
+// // Add properties to it
+// schema
+//     .is().min(6)
+//     .is().max(10)
+//     .has().uppercase()
+//     .has().lowercase()
+//     .has().digits(1)
+//     .has().symbols(1)
+//     .has().not().spaces()
+//     .is().not().oneOf(['Passw0rd', 'Password123']);
 
 
 exports.newRegister = async (req, res) => {
-    if (req.body.password && schema.validate(req.body.password)) {
+
         let data = new User(req.body)
         bcrypt.hash(req.body.password, 12, async (error, hash) => {
             if (error)
@@ -51,13 +51,7 @@ exports.newRegister = async (req, res) => {
             }
         })
     }
-    else {
-        res.status(400).json({
-            success: false,
-            res: "Please Enter a vaild password"
-        })
-    }
-}
+   
 
 exports.login = async (req, res) => {
     try {
