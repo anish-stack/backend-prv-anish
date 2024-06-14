@@ -37,6 +37,7 @@ exports.createRecord = async (req, res) => {
             data.pic4 = url
         }
         await data.save()
+        myCache.del('product', data);
         res.send({ status: 200, result: "Done", message: "New Record id Created", data: data })
 
     } catch (error) {
